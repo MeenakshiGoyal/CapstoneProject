@@ -14,33 +14,29 @@ import org.knoldus.service.UserManagementService
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class UserManagementRoutes extends UserJsonProtocol with SprayJsonSupport {
-
-  val userManagementService = new UserManagementService(new actorUser)
+class UserManagementRoutes(userManagementService: UserManagementService , tokenAuthorization : TokenAuthorization) extends UserJsonProtocol with SprayJsonSupport {
 
   val userRoutes: Route =
     pathPrefix("user") {
       path("login") {
         post & entity(as[Login]) { loginRequest =>
-          val result = userManagementService.login(loginRequest).map {
-            case true =>
-
+         onComplete(userManagementService.login(loginRequest)){
+            case Success(value) =>
               val token = tokenAuthorization.createToken(loginRequest.username, 2)
               respondWithHeader(RawHeader("Access-Token", token))
               complete(StatusCodes.OK)
-
+            case Failure(exception) =>
               complete(StatusCodes.Unauthorized)
-          }
-          complete(result)
         }
-
       } ~
         post {
           path("register") {
             (post & entity(as[Register])) { createUserRequest =>
               onComplete(userManagementService.register(createUserRequest)) {
                 case Success(value) =>
-                  complete((StatusCodes.OK, token))
+                  val token = tokenAuthorization.createToken(loginRequest.username, 2)
+                  respondWithHeader(RawHeader("Access-Token", token))
+                  complete((StatusCodes.OK))
                 case Failure(fail)=>
                   complete(StatusCodes.Unauthorized)
               }
@@ -64,7 +60,7 @@ class UserManagementRoutes extends UserJsonProtocol with SprayJsonSupport {
                 complete(StatusCodes.OK)
                 }
             } ~
-        path( "uodate"/Segment/Segment){ (id , name:String) =>
+        path( "update"/Segment/Segment){ (id , name:String) =>
           put {
            userManagementService.updateUser(id , name))
               complete(StatusCodes.OK)
@@ -92,11 +88,9 @@ class UserManagementRoutes extends UserJsonProtocol with SprayJsonSupport {
           id => userManagementService.enableUser(id)
             complete(StatusCodes.OK)
         }
+      }
+
+    }
 }
-}
-
-
-
-
 
 

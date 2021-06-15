@@ -56,13 +56,5 @@ class UserManagementService(repository:Dao[User]) {
   def getById(id: Option[String]): Future[User] = {
     repository.getUserById(id)
   }
-
-  def enableUser(userID : String) : Future[Boolean] ={
-    repository.enableUser(userID)
-  }
-
-  def disableUser(userID : String) : Future[Boolean] ={
-    repository.disableUser(userID)
-  }
 }
 

@@ -81,16 +81,27 @@ class UserManagementRoutes(userManagementService: UserManagementService , tokenA
         }
       } ~
         path("disable"/Segment) { id =>
-          userManagementService.disableUser(id)
-          complete(StatusCodes.OK)
-        } ~
-        path("enable user"/Segment){
-          id => userManagementService.enableUser(id)
+          get {
+            userManagementService.disableUser(id)
             complete(StatusCodes.OK)
+          }
+        } ~
+        path("enable user"/Segment) { id =>
+          get {
+            userManagementService.enableUser(id)
+            complete(StatusCodes.OK)
+          }
         }
       }
 
     }
 }
+
+
+
+
+
+
+
 
 
